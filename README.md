@@ -21,3 +21,11 @@ $ python label.py
 The `label` site runs on Flask. Navigate to `<Your URL>/label` to start scoring the data.
 
 - To train the model use the `model_training.ipynb` notebook.
+
+- To verify stability of the results run:
+```
+$ ssh lxplus
+$ ssh cmsusr
+$ scp /globalscratch/dqm4ml_production/*<RUN>.root.ls* <PATH_TO_REPO>/data/
+```
+This will copy the ROOT files with the occupancy data stored every 10 lumisections. Next, generate csv `python stability.py <RUN>`. You can run `stability.ipynb` now.
