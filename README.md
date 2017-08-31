@@ -19,3 +19,5 @@ $ cd ..
 $ python label.py
 ```
 The `label` site runs on Flask. Navigate to `<Your URL>/label` to start scoring the data.
+
+- To train the model use the `model_training.ipynb` notebook.
