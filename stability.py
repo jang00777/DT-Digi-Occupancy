@@ -10,10 +10,6 @@ RUN = None
 SAMPLE_SIZE = 47
 
 def resize_occupancy(layer):
-    foo = np.array(layer).reshape(1, -1)
-    return misc.imresize(foo, (1, fixed_size), interp='bilinear', mode="F")
-
-def resize_occupancy(layer):
     return misc.imresize(np.array(layer).reshape(1, -1), (1, SAMPLE_SIZE), interp='bilinear', mode="F")
 
 def scale_occupancy(layer):
