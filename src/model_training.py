@@ -27,6 +27,7 @@ import math
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+import random
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -135,8 +136,8 @@ runs = [272011, 272012, 272014, 272017, 272021, 272774, 273158, 273730,
 test_run = [302634, 302635, 304737, 304738, 304739, 304740]
 
 ###############test##############
-runs = [1]
-test_run = [2]
+runs = range(1,301)
+test_run = [1,2,3,4,5,6]
 #################################
 
 
@@ -176,7 +177,9 @@ def apply_score(layer):
     #                     (labels_frame.layer == layer.layer)].score.values
     #if not len(score):
     #    return np.nan
-    return 0
+    #return score
+    if random.random()<0.85: return int(random.random()*2)
+    else: return np.nan
 
 drift_tubes_layers["score"] = drift_tubes_layers.apply(apply_score, axis=1);
 
@@ -275,19 +278,18 @@ for run in runs:
                 
                 occupancy_raw = [layer.tolist() for layer in chamber["content"]]
                 occupancy_smoothed = [layer.tolist() for layer in chamber["content_smoothed"]]
-
                 occupancy_resized = np.concatenate(
                     #chamber["content_resized"].values).reshape(-1, 47)
-                    chamber["content_resized"].values).reshape(-1, 36)
+                    chamber["content_resized"].values).reshape(-1, 73)
                 occupancy_scaled = np.concatenate(
                     #chamber["content_scaled"].values).reshape(-1, 47)
-                    chamber["content_scaled"].values).reshape(-1, 36)
+                    chamber["content_scaled"].values).reshape(-1, 73)
                 occupancy_smoothed_resized = np.concatenate(
                     #chamber["content_smoothed_resized"].values).reshape(-1, 45)
-                    chamber["content_smoothed_resized"].values).reshape(-1, 34)
+                    chamber["content_smoothed_resized"].values).reshape(-1, 71)
                 occupancy_smoothed_scaled = np.concatenate(
                     #chamber["content_smoothed_scaled"].values).reshape(-1, 45)
-                    chamber["content_smoothed_scaled"].values).reshape(-1, 34)
+                    chamber["content_smoothed_scaled"].values).reshape(-1, 71)
 
                 extended_size_smoothed = max((len(_) for _ in occupancy_smoothed))
                 extended_size_raw = max((len(_) for _ in occupancy_raw))
@@ -309,9 +311,10 @@ for run in runs:
                         "score": score,
                         "content_raw": np.concatenate(
                             #occupancy_raw).reshape(len(chamber), extended_size_raw),
-                            occupancy_raw).reshape(8, extended_size_raw),
+                            occupancy_raw).reshape(-1, extended_size_raw),
                         "content_smoothed": np.concatenate(
-                            occupancy_smoothed).reshape(len(chamber), extended_size_smoothed),
+                            #occupancy_smoothed).reshape(len(chamber), extended_size_smoothed),
+                            occupancy_smoothed).reshape(-1, extended_size_smoothed),
                         "content_resized": occupancy_resized,
                         "content_smoothed_resized": occupancy_smoothed_resized,
                         "content_scaled": occupancy_scaled,
@@ -634,11 +637,11 @@ def score_to_array(score):
     return np.asarray([0, 1])
 
 def generate_input():  
-    return (np.array(np.concatenate(neural_train.content_scaled.values)).reshape(-1, 47),
-            np.concatenate(neural_train["score"].apply(score_to_array).values).reshape(-1, 2),
-            np.array(np.concatenate(neural_val.content_scaled.values)).reshape(-1, 47),
-            np.concatenate(neural_val["score"].apply(score_to_array).values).reshape(-1, 2),
-            np.array(np.concatenate(layers_test.content_scaled.values)).reshape(-1, 47))
+    return (np.array(np.concatenate(neural_train.content_scaled.values)).reshape((-1, 73)),
+            np.concatenate(neural_train["score"].apply(score_to_array).values).reshape((-1, 2)),
+            np.array(np.concatenate(neural_val.content_scaled.values)).reshape((-1, 73)),
+            np.concatenate(neural_val["score"].apply(score_to_array).values).reshape((-1, 2)),
+            np.array(np.concatenate(layers_test.content_scaled.values)).reshape((-1, 73)))
 
 (train_x, train_y, val_x, val_y, test_x) = generate_input()
 
@@ -661,7 +664,7 @@ cw = {0: cw[0], 1: cw[1]}
 
 def artificial_neural_network():
     model = Sequential()
-    model.add(Reshape((47, 1), input_shape=(47,), name="input_ann"))
+    model.add(Reshape((73, 1), input_shape=(73,), name="input_ann"))
     model.add(Flatten(name="flatten_ann"))
     model.add(Dense(8, name="dense_ann", activation="relu"))
     model.add(Dense(2, activation="softmax", name="output_ann"))
@@ -669,7 +672,7 @@ def artificial_neural_network():
 
 def convolutional_neural_network():
     model = Sequential()
-    model.add(Reshape((47, 1), input_shape=(47,), name="input_cnn"))
+    model.add(Reshape((73, 1), input_shape=(73,), name="input_cnn"))
     model.add(Conv1D(10, 3, strides=1, padding="valid", name="convolution_cnn", activation="relu"))
     model.add(MaxPooling1D(pool_size=5, strides=5, padding="valid", name="polling_cnn"))
     model.add(Flatten(name="flatten_cnn"))
