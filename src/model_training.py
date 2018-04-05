@@ -1,11 +1,11 @@
-
+from __future__ import print_function
 # coding: utf-8
 
 # In[1]:
 
 
 # Running on GPU?
-import setGPU
+#import setGPU
 
 
 # # Drift Tubes Digi Occupancy Anomaly Problem
@@ -61,7 +61,7 @@ rng = np.random.RandomState(0)
 
 # Change presentation settings
 
-get_ipython().magic(u'matplotlib inline')
+#E0F2F1get_ipython().magic(u'matplotlib inline')
 
 matplotlib.rcParams["figure.figsize"] = (8.0, 5.0)
 matplotlib.rcParams["xtick.labelsize"] = 12
@@ -133,6 +133,13 @@ runs = [272011, 272012, 272014, 272017, 272021, 272774, 273158, 273730,
         305081, 306041, 306042, 306049]
 
 test_run = [302634, 302635, 304737, 304738, 304739, 304740]
+
+###############test##############
+runs = [1]
+test_run = [2]
+#################################
+
+
 train_runs = [r for r in runs if r not in test_run]
 
 drift_tubes_layers = pd.DataFrame()
@@ -152,26 +159,24 @@ print("Done. Collected %s layers" % drift_tubes_layers.shape[0], end="\r")
 drift_tubes_layers["content"] = drift_tubes_layers["content"].apply(eval)
 drift_tubes_layers["content"] = drift_tubes_layers["content"].apply(np.array)
 
-
 # In[8]:
 
 
 # Append score from labels data file
 
-labels_frame = pd.read_csv(("%s/labels.csv" % labels_directory),
-                           names=["wheel", "station", "sector", "run", "layer", "score"])
+#labels_frame = pd.read_csv(("%s/labels.csv" % labels_directory),
+                           #names=["wheel", "station", "sector", "run", "layer", "score"])
 
 def apply_score(layer):
     """Applies scores form label file"""
-    score = labels_frame[(labels_frame.wheel == layer.wheel) &
-                         (labels_frame.station == layer.station) &
-                         (labels_frame.sector == layer.sector) &
-                         (labels_frame.run == layer.run) &
-                         (labels_frame.layer == layer.layer)].score.values
-    if not len(score):
-        return np.nan
-
-    return score[0]
+    #score = labels_frame[(labels_frame.wheel == layer.wheel) &
+    #                     (labels_frame.station == layer.station) &
+    #                     (labels_frame.sector == layer.sector) &
+    #                     (labels_frame.run == layer.run) &
+    #                     (labels_frame.layer == layer.layer)].score.values
+    #if not len(score):
+    #    return np.nan
+    return 0
 
 drift_tubes_layers["score"] = drift_tubes_layers.apply(apply_score, axis=1);
 
@@ -246,15 +251,19 @@ drift_tubes_layers["content_smoothed_scaled"] = drift_tubes_layers["content_smoo
 
 drift_tubes_chambers = pd.DataFrame()
 
+wheels = [-1,1]
+stations = [1,2]
+sectors = [0]
+
 for run in runs:
-    for wheel in range(-2, 3):
-        for station in range(1, 5):
-            for sector in range(1, 15):
-                if labels_frame[(labels_frame.run == run) &
-                                (labels_frame.wheel == wheel) &
-                                (labels_frame.station == station) &
-                                (labels_frame.sector == sector)].empty:
-                    continue
+    for wheel in wheels:
+        for station in stations:
+            for sector in sectors:
+                #if labels_frame[(labels_frame.run == run) &
+                #                (labels_frame.wheel == wheel) &
+                #                (labels_frame.station == station) &
+                #                (labels_frame.sector == sector)].empty:
+                 #   continue
 
                 chamber = drift_tubes_layers[(drift_tubes_layers.run == run) &
                                              (drift_tubes_layers.wheel == wheel) &
@@ -268,13 +277,17 @@ for run in runs:
                 occupancy_smoothed = [layer.tolist() for layer in chamber["content_smoothed"]]
 
                 occupancy_resized = np.concatenate(
-                    chamber["content_resized"].values).reshape(-1, 47)
+                    #chamber["content_resized"].values).reshape(-1, 47)
+                    chamber["content_resized"].values).reshape(-1, 36)
                 occupancy_scaled = np.concatenate(
-                    chamber["content_scaled"].values).reshape(-1, 47)
+                    #chamber["content_scaled"].values).reshape(-1, 47)
+                    chamber["content_scaled"].values).reshape(-1, 36)
                 occupancy_smoothed_resized = np.concatenate(
-                    chamber["content_smoothed_resized"].values).reshape(-1, 45)
+                    #chamber["content_smoothed_resized"].values).reshape(-1, 45)
+                    chamber["content_smoothed_resized"].values).reshape(-1, 34)
                 occupancy_smoothed_scaled = np.concatenate(
-                    chamber["content_smoothed_scaled"].values).reshape(-1, 45)
+                    #chamber["content_smoothed_scaled"].values).reshape(-1, 45)
+                    chamber["content_smoothed_scaled"].values).reshape(-1, 34)
 
                 extended_size_smoothed = max((len(_) for _ in occupancy_smoothed))
                 extended_size_raw = max((len(_) for _ in occupancy_raw))
@@ -295,7 +308,8 @@ for run in runs:
                         "sector": sector,
                         "score": score,
                         "content_raw": np.concatenate(
-                            occupancy_raw).reshape(len(chamber), extended_size_raw),
+                            #occupancy_raw).reshape(len(chamber), extended_size_raw),
+                            occupancy_raw).reshape(8, extended_size_raw),
                         "content_smoothed": np.concatenate(
                             occupancy_smoothed).reshape(len(chamber), extended_size_smoothed),
                         "content_resized": occupancy_resized,
@@ -354,7 +368,7 @@ def visualize_preprocessing(show, smoothed):
 # In[16]:
 
 
-visualize_preprocessing(drift_tubes_chambers[drift_tubes_chambers.score == 12].iloc[6], False)
+#visualize_preprocessing(drift_tubes_chambers[drift_tubes_chambers.score == 12].iloc[6], False)
 
 
 # Example of preprocessing pipeline for <b>chamber with one faulty layer</b>:
@@ -362,7 +376,7 @@ visualize_preprocessing(drift_tubes_chambers[drift_tubes_chambers.score == 12].i
 # In[17]:
 
 
-visualize_preprocessing(drift_tubes_chambers[drift_tubes_chambers.score == 11].iloc[0], False)
+#visualize_preprocessing(drift_tubes_chambers[drift_tubes_chambers.score == 11].iloc[0], False)
 
 
 # Example of preprocessing pipeline for <b>chamber with twelve faulty layer</b>:
@@ -370,7 +384,7 @@ visualize_preprocessing(drift_tubes_chambers[drift_tubes_chambers.score == 11].i
 # In[18]:
 
 
-visualize_preprocessing(drift_tubes_chambers[drift_tubes_chambers.score == 0].iloc[3], False)
+#visualize_preprocessing(drift_tubes_chambers[drift_tubes_chambers.score == 0].iloc[3], False)
 
 
 # Example of <b>alternative</b> preprocessing (with median polling) pipeline for <b>chamber without problems</b>:
@@ -378,8 +392,8 @@ visualize_preprocessing(drift_tubes_chambers[drift_tubes_chambers.score == 0].il
 # In[19]:
 
 
-visualize_preprocessing(drift_tubes_chambers[drift_tubes_chambers.score == 12].iloc[6], False)
-visualize_preprocessing(drift_tubes_chambers[drift_tubes_chambers.score == 12].iloc[6], True)
+#visualize_preprocessing(drift_tubes_chambers[drift_tubes_chambers.score == 12].iloc[6], False)
+#visualize_preprocessing(drift_tubes_chambers[drift_tubes_chambers.score == 12].iloc[6], True)
 
 
 # ## Supervised searching for anomalies
@@ -404,14 +418,14 @@ def get_roc_curve(test_df, models, working_point=None):
   
     for i, (legend_label, model_score) in enumerate(models):
         fpr, tpr, _ = roc_curve(test_df["score"], test_df[model_score])
-        auc_v = round(auc(fpr, tpr), 3)
+        #auc_v = round(auc(fpr, tpr), 3)
         plt.plot(fpr,
                  tpr,
                  linewidth=3,
                  color=lines[i][0],
                  linestyle=lines[i][1],
-                 label=("%s, AUC: %s" % (legend_label, auc_v)))
-        
+                 #label=("%s, AUC: %s" % (legend_label, auc_v)))
+                 )        
     if working_point:
         plt.plot(1-working_point[0],
                  working_point[1],
@@ -453,7 +467,7 @@ def production_test(content):
     return (float(len(np.where(content == 0)[0])) / len(np.where(~np.isnan(content))[0]))
 
 drift_tubes_chambers["treshold"] = drift_tubes_chambers["content_raw"].apply(production_test)
-benchmark(drift_tubes_chambers["score"] < 12, drift_tubes_chambers["treshold"] > 0.1);
+#benchmark(drift_tubes_chambers["score"] < 12, drift_tubes_chambers["treshold"] > 0.1);
 
 
 # ### Split the dataset to be able to use supervised learning
